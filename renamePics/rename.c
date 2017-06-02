@@ -19,6 +19,9 @@ static char *imageType[4] = {
     ".webm"
     };
 unsigned int maxRandDigits = 13;
+void displayHelp(){
+    puts("Usage: rename.exe <directory_path>\nExample: rename E:\\test");
+}
 char *isImage(char *fileName){
         for(int x = 0;x<4;x++){
             if(strstr(fileName, imageType[x])){
@@ -55,41 +58,46 @@ int main(int argc, char **argv) {
         puts("ERROR: Insufficient number of command line arguments");      
     }
     else{
-        int modifiedFilesCount = 0;
-        srand(time(0));
-        struct dirent *dirElement;
-        DIR *root = NULL;
-        root = opendir(argv[1]);
-        while((dirElement = readdir(root))){
-            if(dirElement->d_name[0]!='.'){
-                char fullName[BUFF_SIZE] = {0};
-                strcpy(fullName, argv[1]);
-                strcat(fullName,"\\");
-                strcat(fullName, dirElement->d_name);
-                if(isFile(fullName)){
-                     char *detectedImageExtension = NULL;
-                     if((detectedImageExtension = isImage(dirElement->d_name))!=NULL){
-                         chdir(argv[1]);
-                         char newFileName[BUFF_SIZE] = {0};
-                         generateFileName(newFileName, detectedImageExtension);
-                         int retResult = rename(dirElement->d_name, newFileName);
-                         if(!retResult){
-                               ++modifiedFilesCount;
-                            }
-                         else{
-                                perror("ERROR");
-                            }
-                      }
-                 }   
-             }     
+        if(!strcmp(argv[1], "help")) {
+            displayHelp();
         }
-        if(modifiedFilesCount!=0){
-            printf("Successfully renamed %d files\n", modifiedFilesCount);
+        else {
+            int modifiedFilesCount = 0;
+            srand(time(0));
+            struct dirent *dirElement;
+            DIR *root = NULL;
+            root = opendir(argv[1]);
+            while((dirElement = readdir(root))){
+                if(dirElement->d_name[0]!='.'){
+                    char fullName[BUFF_SIZE] = {0};
+                    strcpy(fullName, argv[1]);
+                    strcat(fullName,"\\");
+                    strcat(fullName, dirElement->d_name);
+                    if(isFile(fullName)){
+                         char *detectedImageExtension = NULL;
+                         if((detectedImageExtension = isImage(dirElement->d_name))!=NULL){
+                             chdir(argv[1]);
+                             char newFileName[BUFF_SIZE] = {0};
+                             generateFileName(newFileName, detectedImageExtension);
+                             int retResult = rename(dirElement->d_name, newFileName);
+                             if(!retResult){
+                                   ++modifiedFilesCount;
+                                }
+                             else{
+                                    perror("ERROR");
+                                }
+                          }
+                     }   
+                 }     
+            }
+            if(modifiedFilesCount!=0){
+                printf("Successfully renamed %d files\n", modifiedFilesCount);
+            }
+            else{
+                puts("No images detected");
+            }
+            closedir(root);
         }
-        else{
-            puts("No images detected");
-        }
-        closedir(root);  
     }
         return 0;
 }
